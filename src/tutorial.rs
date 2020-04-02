@@ -42,9 +42,9 @@ pub static TUTORIAL_TEXT: &'static str = r"
 
     git rebase --onto train/2020-04-02 train/2020-04-01
     aka:
-    git rebase --onto commit-Y         commit-B
+    git rebase --onto commit-Y         commit-X
 
-  This will replay all our commits from C back through B on top of Y. This
+  This will replay all our commits from C back to A on top of Y. This
   creates new commits with the same contents on top of the new base branch.
 
                                   A'--B'--C' feature-omega
