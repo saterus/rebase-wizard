@@ -84,7 +84,10 @@ pub fn branch_hop(opt: &Opt) {
 }
 
 pub fn pick_target_branch(current_branch_name: &str, opt: &Opt) -> String {
-    let header_str = format!("Pick the TARGET_BRANCH for {}: ", current_branch_name);
+    let header_str = format!(
+        "Pick the TARGET_BRANCH. This will be the new base branch for {} after we finish this jump.",
+        current_branch_name
+    );
     let preview_window = opt.preview_window_location.as_arg();
     let preview_str = "\
       echo -e 'Rebase Command Preview:
@@ -113,7 +116,10 @@ pub fn pick_target_branch(current_branch_name: &str, opt: &Opt) -> String {
 }
 
 pub fn pick_branch_point(current_branch_name: &str, target_branch: &str, opt: &Opt) -> String {
-    let header_str = format!("Pick the BRANCH_POINT for {}: ", current_branch_name);
+    let header_str = format!(
+        "Pick the BRANCH_POINT. This will be the first commit you didn't author on {}.",
+        current_branch_name
+    );
     let preview_window = opt.preview_window_location.as_arg();
     let preview_str = format!(
         "\

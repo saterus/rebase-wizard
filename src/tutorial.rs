@@ -20,7 +20,11 @@ Wizard Secrets: 🧙‍♂️
 pub static MORE_HELP_TEASER: &'static str = "For more secrets 🔮, try running the --tutorial flag.";
 
 pub static TUTORIAL_TEXT: &'static str = r"
-  Take the following example:
+  *Branch Jumping*: It isn't uncommon to need to move your feature branch from
+  being based on one branch to another. This requires picking the exact right
+  arguments for `git rebase --onto`.
+
+  To illustrate how this needs to work, let us take the following example:
 
     I---o---o---o---J  master
     \
