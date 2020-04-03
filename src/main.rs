@@ -41,26 +41,38 @@ impl PreviewWindowLocation {
     }
 }
 
+use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
-#[derive(StructOpt, Debug)]
-#[structopt(name = "rebase_wizard", after_help = tutorial::MORE_HELP_TEASER, long_about = tutorial::SECRETS_TEXT)]
-pub struct Opt {
-    #[structopt(short, long)]
-    /// Print the full branch hopping tutorial.
-    tutorial: bool,
+#[derive(Debug, StructOpt)]
+pub enum Subcommand {
+    /// Jump between base branches.
+    #[structopt(name = "jump")]
+    Jump,
+    /// View the rebase-wizard tutorial about branch jumping.
+    Tutorial,
+}
 
+#[derive(StructOpt, Debug)]
+#[structopt(name = "rebase_wizard", setting = AppSettings::InferSubcommands, after_help = tutorial::MORE_HELP_TEASER, long_about = tutorial::SECRETS_TEXT)]
+pub struct Opt {
     #[structopt(short, long, possible_values = &PreviewWindowLocation::variants(), case_insensitive = true, default_value = "Up")]
     preview_window_location: PreviewWindowLocation,
+
+    #[structopt(subcommand)]
+    subcommand: Subcommand,
 }
 
 pub fn main() {
     let opt = Opt::from_args();
-    if opt.tutorial {
-        tutorial::print_tutorial();
-        std::process::exit(0);
-    }
 
+    match &opt.subcommand {
+        Subcommand::Jump => branch_hop(&opt),
+        Subcommand::Tutorial => tutorial::print_tutorial(),
+    }
+}
+
+pub fn branch_hop(opt: &Opt) {
     let current_branch_name = current_branch_name();
     let target_branch = pick_target_branch(&current_branch_name, &opt);
     let branch_point = pick_branch_point(&current_branch_name, &target_branch, &opt);

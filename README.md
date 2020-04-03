@@ -29,7 +29,9 @@ $ git checkout best-feature-ever
 $ git fetch
 
 # Ask the wizard
-$ rebase-wizard
+$ rebase-wizard help
+$ rebase-wizard tutorial
+$ rebase-wizard jump
 ```
 
 ## User Setup:
@@ -38,7 +40,13 @@ $ rebase-wizard
 * git 2.23+
 
 ##### OSX:
-* Download build from the Releases page.
+
+Please bear us as we improve these cumbersome distribution problems. We're actively trying to improve it. This is pre-alpha software.
+
+* Download the latest build from the [Releases page](https://github.com/saterus/rebase-wizard/releases).
+* `chmod 755 rebase-wizard` so it can be executable.
+* Add the `rebase-wizard` to your `/usr/local/bin` so it is available in your `$PATH`.
+* Be ready to open the Security Settings panel and allow an exception for this unsigned binary to run. :grimacing:
 
 ##### Linux/Windows:
 * Untested
