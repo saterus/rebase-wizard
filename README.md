@@ -2,26 +2,16 @@
 
 The Wizard can help with all your rebase problems!
 
-**IMPORTANT NOTE**: The Wizard will never act without your permission.
-Currently the Wizard only provides advice and **never** runs a command that
-could change your git history **in any way**. That's your job.
+## IMPORTANT NOTE:
 
-### (Developer) Setup:
+The Wizard never acts without your intervention. The Wizard only provides advice and **never** runs a command that could change your git history **in any way**. That's your job.
 
-Pre-Requirements:
-* Rust 1.40+
-* cargo
-* `~/.cargo/bin` added to your path
+## Usage
 
+### See how the wizard can help!
 ```bash
-# Clone this repo
-$ git clone git@github.com:saterus/rebase-wizard.git
-
-# Install the binary
-$ cargo install --path .
-
-# See how the wizard can help!
 $ rebase-wizard --help
+$ rebase-wizard --tutorial
 ```
 
 ### Base Branch Switching
@@ -42,9 +32,64 @@ $ git fetch
 $ rebase-wizard
 ```
 
-### Other Rebase Operations
+## User Setup:
 
-Not yet supported
+### Requirements:
+* git 2.23+
+
+##### OSX:
+* Download build from the Releases page.
+
+##### Linux/Windows:
+* Untested
+* Follow the Developer Setup steps
+
+## Developer Setup:
+
+### Requirements:
+* git 2.23+
+* Rust environment
+
+#### Setup Rust Dev Environment:
+
+You can skip this step if you already have Rust installed.
+
+```bash
+# Install the Rust toolchain manager: rustup
+$ brew install rustup-init
+$ rustup-init
+
+# Add the Cargo binary directory to your path
+$ source ~/.cargo/env
+
+# Verify you have a working Rust installation.
+$ rustup show
+
+# =>
+# Should output something similar to:
+# Default host: x86_64-apple-darwin
+# rustup home:  ~/.rustup
+
+# installed toolchains
+# --------------------
+# stable-x86_64-apple-darwin
+
+
+# Clone this repo
+$ git clone git@github.com:saterus/rebase-wizard.git
+
+# Build a local copy
+$ cargo build
+```
+
+#### Install the binary in your path
+```bash
+# Install into ~/.cargo/bin
+$ cargo install --path .
+
+# Run from any git repository
+$ rebase-wizard
+```
 
 # Contributing
 
