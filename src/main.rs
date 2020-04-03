@@ -56,11 +56,16 @@ pub enum Subcommand {
 #[derive(StructOpt, Debug)]
 #[structopt(name = "rebase_wizard", setting = AppSettings::InferSubcommands, after_help = tutorial::MORE_HELP_TEASER, long_about = tutorial::SECRETS_TEXT)]
 pub struct Opt {
+    #[structopt(subcommand)]
+    subcommand: Subcommand,
+
+    /// Set which side of the screen the preview window appears
     #[structopt(short, long, possible_values = &PreviewWindowLocation::variants(), case_insensitive = true, default_value = "Up")]
     preview_window_location: PreviewWindowLocation,
 
-    #[structopt(subcommand)]
-    subcommand: Subcommand,
+    /// Enable dev_mode mode. Only useful for developing rebase-wizard itself.
+    #[structopt(short, long)]
+    dev_mode: bool,
 }
 
 pub fn main() {
@@ -73,6 +78,8 @@ pub fn main() {
 }
 
 pub fn branch_hop(opt: &Opt) {
+    ensure_clean_local_repo(&opt);
+
     let current_branch_name = current_branch_name();
     let target_branch = pick_target_branch(&current_branch_name, &opt);
     let branch_point = pick_branch_point(&current_branch_name, &target_branch, &opt);
@@ -149,6 +156,30 @@ pub fn pick_branch_point(current_branch_name: &str, target_branch: &str, opt: &O
     });
 
     find_branch_name(&selected_item.output()).to_string()
+}
+
+static LOCAL_CHANGES_WARNING: &'static str = "\
+The Wizard advises against rebasing while there are changes to the local git repo.
+
+Please commit, stash, or discard your changes before proceeding.";
+fn ensure_clean_local_repo(opt: &Opt) {
+    if !local_repo_is_clean() {
+        eprintln!("{}", &LOCAL_CHANGES_WARNING);
+        if !opt.dev_mode {
+            std::process::exit(1);
+        }
+    }
+}
+
+fn local_repo_is_clean() -> bool {
+    let output = Command::new("git")
+        .arg("status")
+        .arg("--short")
+        .output()
+        .expect("Failed to determine local repo status")
+        .stdout;
+
+    output.is_empty()
 }
 
 fn all_branches() -> SkimItemReceiver {
