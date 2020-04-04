@@ -43,8 +43,21 @@ $ rebase-wizard jump
 
 Please bear us as we improve these cumbersome distribution problems. We're actively trying to improve it. This is pre-alpha software.
 
+###### Homebrew Installation
+```bash
+# Add the custom homebrew "tap" using ssh protocol
+$ brew tap saterus/rebase-wizard git@github.com:saterus/rebase-wizard.git
+# OR
+# Add the custom homebrew "tap" using https protocol
+$ brew tap saterus/rebase-wizard https://github.com/saterus/rebase-wizard
+
+# Install the latest published version
+$ brew install rebase-wizard
+```
+
+###### Manual Installation:
 * Download the latest build from the [Releases page](https://github.com/saterus/rebase-wizard/releases).
-* `chmod 755 rebase-wizard` so it can be executable.
+* `chmod 755 rebase-wizard` so it is executable.
 * Add the `rebase-wizard` to your `/usr/local/bin` so it is available in your `$PATH`.
 * Be ready to open the Security Settings panel and allow an exception for this unsigned binary to run. :grimacing:
 
