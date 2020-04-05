@@ -1,7 +1,6 @@
 use crate::cli;
 use crate::git;
-use skim::prelude::*;
-use std::io::BufRead;
+use crate::sk;
 
 pub fn jump(config: &cli::Config) {
     git::ensure_clean_local_repo(&config);
@@ -28,25 +27,17 @@ pub fn pick_target_branch(current_branch_name: &str, config: &cli::Config) -> St
       echo -e 'Branch HEAD Preview: (git show --stat {2})\n' &&\
         git show --stat {2}";
 
-    let options = SkimOptions {
-        header: Some(&header_str),
-        prompt: Some("Select TARGET BRANCH: "),
-        preview: Some(preview_str),
-        preview_window: Some(&preview_window),
-        ..SkimOptions::default()
+    let options = sk::SimpleOptions {
+        header: &header_str,
+        prompt: "Select TARGET BRANCH: ",
+        preview: preview_str,
+        preview_window: &preview_window,
     };
 
     let branches = git::all_branches();
-    let skim_output = Skim::run_with(&options, to_skim_source(branches))
-        .map(|out| out.selected_items)
-        .unwrap_or_else(|| Vec::new());
+    let selection = sk::one(sk::to_source(branches), options);
 
-    let selected_item = skim_output.first().unwrap_or_else(|| {
-        eprintln!("Nothing selected. Aborting.");
-        std::process::exit(1);
-    });
-
-    git::extract_ref(&selected_item.output()).to_string()
+    git::extract_ref(&selection).to_string()
 }
 
 pub fn pick_branch_point(
@@ -68,28 +59,15 @@ pub fn pick_branch_point(
         target_branch
     );
 
-    let options = SkimOptions {
-        header: Some(&header_str),
-        prompt: Some("Select BRANCH POINT: "),
-        preview: Some(&preview_str),
-        preview_window: Some(&preview_window),
-        ..SkimOptions::default()
+    let options = sk::SimpleOptions {
+        header: &header_str,
+        prompt: "Select BRANCH POINT: ",
+        preview: &preview_str,
+        preview_window: &preview_window,
     };
 
     let commits = git::recent_commits();
-    let skim_output = Skim::run_with(&options, to_skim_source(commits))
-        .map(|out| out.selected_items)
-        .unwrap_or_else(|| Vec::new());
+    let selection = sk::one(sk::to_source(commits), options);
 
-    let selected_item = skim_output.first().unwrap_or_else(|| {
-        eprintln!("Nothing selected. Aborting.");
-        std::process::exit(1);
-    });
-
-    git::extract_ref(&selected_item.output()).to_string()
-}
-
-fn to_skim_source(input: impl BufRead + Send + 'static) -> Option<SkimItemReceiver> {
-    let item_reader = SkimItemReader::default();
-    Some(item_reader.of_bufread(input))
+    git::extract_ref(&selection).to_string()
 }

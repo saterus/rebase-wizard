@@ -4,6 +4,7 @@ extern crate skim;
 
 mod cli;
 mod git;
+mod sk;
 mod subcommands;
 
 pub fn main() {
