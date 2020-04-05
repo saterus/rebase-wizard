@@ -2,13 +2,12 @@ extern crate clap;
 extern crate regex;
 extern crate skim;
 
-use clap::arg_enum;
 use regex::Regex;
 use skim::prelude::*;
-use std::fmt::Debug;
 use std::io::{Cursor, Read};
 use std::process::Command;
 
+mod cli;
 mod tutorial;
 
 enum BranchLocation {
@@ -25,59 +24,16 @@ impl BranchLocation {
     }
 }
 
-arg_enum! {
-  #[derive(Debug)]
-  pub enum PreviewWindowLocation {
-    Up,
-    Down,
-    Left,
-    Right,
-  }
-}
-
-impl PreviewWindowLocation {
-    pub fn as_arg(&self) -> String {
-        format!("{:?}", self).to_lowercase()
-    }
-}
-
-use structopt::clap::AppSettings;
-use structopt::StructOpt;
-
-#[derive(Debug, StructOpt)]
-pub enum Subcommand {
-    /// Jump between base branches.
-    #[structopt(name = "jump")]
-    Jump,
-    /// View the rebase-wizard tutorial about branch jumping.
-    Tutorial,
-}
-
-#[derive(StructOpt, Debug)]
-#[structopt(name = "rebase_wizard", setting = AppSettings::InferSubcommands, after_help = tutorial::MORE_HELP_TEASER, long_about = tutorial::SECRETS_TEXT)]
-pub struct Opt {
-    #[structopt(subcommand)]
-    subcommand: Subcommand,
-
-    /// Set which side of the screen the preview window appears
-    #[structopt(short, long, possible_values = &PreviewWindowLocation::variants(), case_insensitive = true, default_value = "Up")]
-    preview_window_location: PreviewWindowLocation,
-
-    /// Enable dev_mode mode. Only useful for developing rebase-wizard itself.
-    #[structopt(short, long)]
-    dev_mode: bool,
-}
-
 pub fn main() {
-    let opt = Opt::from_args();
+    let opt = cli::config();
 
     match &opt.subcommand {
-        Subcommand::Jump => branch_hop(&opt),
-        Subcommand::Tutorial => tutorial::print_tutorial(),
+        cli::Subcommand::Jump => branch_hop(&opt),
+        cli::Subcommand::Tutorial => tutorial::print_tutorial(),
     }
 }
 
-pub fn branch_hop(opt: &Opt) {
+pub fn branch_hop(opt: &cli::Opt) {
     ensure_clean_local_repo(&opt);
 
     let current_branch_name = current_branch_name();
@@ -90,7 +46,7 @@ pub fn branch_hop(opt: &Opt) {
     println!("  git rebase --onto {} {}", target_branch, branch_point);
 }
 
-pub fn pick_target_branch(current_branch_name: &str, opt: &Opt) -> String {
+pub fn pick_target_branch(current_branch_name: &str, opt: &cli::Opt) -> String {
     let header_str = format!(
         "Pick the TARGET_BRANCH. This will be the new base branch for {} after we finish this jump.",
         current_branch_name
@@ -122,7 +78,7 @@ pub fn pick_target_branch(current_branch_name: &str, opt: &Opt) -> String {
     find_branch_name(&selected_item.output()).to_string()
 }
 
-pub fn pick_branch_point(current_branch_name: &str, target_branch: &str, opt: &Opt) -> String {
+pub fn pick_branch_point(current_branch_name: &str, target_branch: &str, opt: &cli::Opt) -> String {
     let header_str = format!(
         "Pick the BRANCH_POINT. This will be the first commit you didn't author on {}.",
         current_branch_name
@@ -162,7 +118,7 @@ static LOCAL_CHANGES_WARNING: &'static str = "\
 The Wizard advises against rebasing while there are changes to the local git repo.
 
 Please commit, stash, or discard your changes before proceeding.";
-fn ensure_clean_local_repo(opt: &Opt) {
+fn ensure_clean_local_repo(opt: &cli::Opt) {
     if !local_repo_is_clean() {
         eprintln!("{}", &LOCAL_CHANGES_WARNING);
         if !opt.dev_mode {
