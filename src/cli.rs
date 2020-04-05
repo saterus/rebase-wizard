@@ -31,7 +31,7 @@ pub enum Subcommand {
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "rebase_wizard", setting = AppSettings::InferSubcommands, after_help = tutorial::MORE_HELP_TEASER, long_about = tutorial::SECRETS_TEXT)]
-pub struct Opt {
+pub struct Config {
     #[structopt(subcommand)]
     pub subcommand: Subcommand,
 
@@ -44,6 +44,6 @@ pub struct Opt {
     pub dev_mode: bool,
 }
 
-pub fn config() -> Opt {
-    Opt::from_args()
+pub fn config() -> Config {
+    Config::from_args()
 }

@@ -25,20 +25,20 @@ impl BranchLocation {
 }
 
 pub fn main() {
-    let opt = cli::config();
+    let config = cli::config();
 
-    match &opt.subcommand {
-        cli::Subcommand::Jump => branch_hop(&opt),
+    match &config.subcommand {
+        cli::Subcommand::Jump => branch_hop(&config),
         cli::Subcommand::Tutorial => tutorial::print_tutorial(),
     }
 }
 
-pub fn branch_hop(opt: &cli::Opt) {
-    ensure_clean_local_repo(&opt);
+pub fn branch_hop(config: &cli::Config) {
+    ensure_clean_local_repo(&config);
 
     let current_branch_name = current_branch_name();
-    let target_branch = pick_target_branch(&current_branch_name, &opt);
-    let branch_point = pick_branch_point(&current_branch_name, &target_branch, &opt);
+    let target_branch = pick_target_branch(&current_branch_name, &config);
+    let branch_point = pick_branch_point(&current_branch_name, &target_branch, &config);
 
     println!("The Rebase Wizard has seen your future:");
     println!("");
@@ -46,12 +46,12 @@ pub fn branch_hop(opt: &cli::Opt) {
     println!("  git rebase --onto {} {}", target_branch, branch_point);
 }
 
-pub fn pick_target_branch(current_branch_name: &str, opt: &cli::Opt) -> String {
+pub fn pick_target_branch(current_branch_name: &str, config: &cli::Config) -> String {
     let header_str = format!(
         "Pick the TARGET_BRANCH. This will be the new base branch for {} after we finish this jump.",
         current_branch_name
     );
-    let preview_window = opt.preview_window_location.as_arg();
+    let preview_window = config.preview_window_location.as_arg();
     let preview_str = "\
       echo -e 'Rebase Command Preview:
         git rebase --onto {2}  BRANCH_POINT\n' &&\
@@ -78,12 +78,16 @@ pub fn pick_target_branch(current_branch_name: &str, opt: &cli::Opt) -> String {
     find_branch_name(&selected_item.output()).to_string()
 }
 
-pub fn pick_branch_point(current_branch_name: &str, target_branch: &str, opt: &cli::Opt) -> String {
+pub fn pick_branch_point(
+    current_branch_name: &str,
+    target_branch: &str,
+    config: &cli::Config,
+) -> String {
     let header_str = format!(
         "Pick the BRANCH_POINT. This will be the first commit you didn't author on {}.",
         current_branch_name
     );
-    let preview_window = opt.preview_window_location.as_arg();
+    let preview_window = config.preview_window_location.as_arg();
     let preview_str = format!(
         "\
       echo -e 'Rebase Command Preview:
@@ -118,10 +122,10 @@ static LOCAL_CHANGES_WARNING: &'static str = "\
 The Wizard advises against rebasing while there are changes to the local git repo.
 
 Please commit, stash, or discard your changes before proceeding.";
-fn ensure_clean_local_repo(opt: &cli::Opt) {
+fn ensure_clean_local_repo(config: &cli::Config) {
     if !local_repo_is_clean() {
         eprintln!("{}", &LOCAL_CHANGES_WARNING);
-        if !opt.dev_mode {
+        if !config.dev_mode {
             std::process::exit(1);
         }
     }
