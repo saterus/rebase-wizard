@@ -88,7 +88,7 @@ pub fn current_branch_name() -> String {
         .to_string()
 }
 
-pub fn find_branch_name(branch_line: &str) -> &str {
+pub fn extract_ref(branch_line: &str) -> &str {
     let re = Regex::new(r"\s*(\w\S*)\s").unwrap();
 
     for caps in re.captures_iter(branch_line) {
@@ -103,11 +103,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_find_branch_name() {
+    fn test_extract_ref() {
         let sample = " * foo/bar-baz         770b0814b WIP!";
         let sample2 = "   foo/bark-bazz         770b0814b WIP!";
+        let sample3 = "   origin/foo/bar-baz         770b0814b WIP!";
+        let sample4 = "   fa1afe1         WIP!";
 
-        assert_eq!(find_branch_name(sample), "foo/bar-baz");
-        assert_eq!(find_branch_name(sample2), "foo/bark-bazz");
+        assert_eq!(extract_ref(sample), "foo/bar-baz");
+        assert_eq!(extract_ref(sample2), "foo/bark-bazz");
+        assert_eq!(extract_ref(sample3), "origin/foo/bar-baz");
+        assert_eq!(extract_ref(sample4), "fa1afe1");
     }
 }

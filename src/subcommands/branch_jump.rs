@@ -46,7 +46,7 @@ pub fn pick_target_branch(current_branch_name: &str, config: &cli::Config) -> St
         std::process::exit(1);
     });
 
-    git::find_branch_name(&selected_item.output()).to_string()
+    git::extract_ref(&selected_item.output()).to_string()
 }
 
 pub fn pick_branch_point(
@@ -86,7 +86,7 @@ pub fn pick_branch_point(
         std::process::exit(1);
     });
 
-    git::find_branch_name(&selected_item.output()).to_string()
+    git::extract_ref(&selected_item.output()).to_string()
 }
 
 fn to_skim_source(input: impl BufRead + Send + 'static) -> Option<SkimItemReceiver> {
