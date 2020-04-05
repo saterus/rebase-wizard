@@ -1,6 +1,7 @@
 use crate::cli;
 use crate::git;
 use skim::prelude::*;
+use std::io::BufRead;
 
 pub fn jump(config: &cli::Config) {
     git::ensure_clean_local_repo(&config);
@@ -35,7 +36,8 @@ pub fn pick_target_branch(current_branch_name: &str, config: &cli::Config) -> St
         ..SkimOptions::default()
     };
 
-    let skim_output = Skim::run_with(&options, target_branch_skim_source())
+    let branches = git::all_branches();
+    let skim_output = Skim::run_with(&options, to_skim_source(branches))
         .map(|out| out.selected_items)
         .unwrap_or_else(|| Vec::new());
 
@@ -45,12 +47,6 @@ pub fn pick_target_branch(current_branch_name: &str, config: &cli::Config) -> St
     });
 
     git::find_branch_name(&selected_item.output()).to_string()
-}
-
-fn target_branch_skim_source() -> Option<SkimItemReceiver> {
-    let branches = git::all_branches();
-    let item_reader = SkimItemReader::default();
-    Some(item_reader.of_bufread(branches))
 }
 
 pub fn pick_branch_point(
@@ -73,7 +69,6 @@ pub fn pick_branch_point(
     );
 
     let options = SkimOptions {
-        cmd: Some("git log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short -n 50"),
         header: Some(&header_str),
         prompt: Some("Select BRANCH POINT: "),
         preview: Some(&preview_str),
@@ -81,7 +76,8 @@ pub fn pick_branch_point(
         ..SkimOptions::default()
     };
 
-    let skim_output = Skim::run_with(&options, None)
+    let commits = git::recent_commits();
+    let skim_output = Skim::run_with(&options, to_skim_source(commits))
         .map(|out| out.selected_items)
         .unwrap_or_else(|| Vec::new());
 
@@ -91,4 +87,9 @@ pub fn pick_branch_point(
     });
 
     git::find_branch_name(&selected_item.output()).to_string()
+}
+
+fn to_skim_source(input: impl BufRead + Send + 'static) -> Option<SkimItemReceiver> {
+    let item_reader = SkimItemReader::default();
+    Some(item_reader.of_bufread(input))
 }

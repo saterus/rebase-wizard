@@ -42,24 +42,37 @@ fn local_repo_is_clean() -> bool {
 }
 
 pub fn all_branches() -> impl BufRead {
-    let local_branch_output = branch_list(BranchLocation::Local);
-    let remote_branch_output = branch_list(BranchLocation::Remote);
-
-    let local_branches = Cursor::new(local_branch_output);
-    let remote_branches = Cursor::new(remote_branch_output);
+    let local_branches = branch_list(BranchLocation::Local);
+    let remote_branches = branch_list(BranchLocation::Remote);
 
     local_branches.chain(remote_branches)
 }
 
-pub fn branch_list(location: BranchLocation) -> Vec<u8> {
-    Command::new("git")
+pub fn branch_list(location: BranchLocation) -> impl BufRead {
+    let branches = Command::new("git")
         .arg("branch")
         .arg("-vvv")
         .arg("--sort=-committerdate")
         .args(location.as_arg())
         .output()
         .expect("Failed to generate local branches")
-        .stdout
+        .stdout;
+
+    Cursor::new(branches)
+}
+
+pub fn recent_commits() -> impl BufRead {
+    let commits = Command::new("git")
+        .arg("log")
+        .arg("--pretty=format:%h %ad | %s%d [%an]")
+        .arg("--graph")
+        .arg("--date=short")
+        .arg("-n50")
+        .output()
+        .expect("Failed to generate recent commits")
+        .stdout;
+
+    Cursor::new(commits)
 }
 
 pub fn current_branch_name() -> String {
