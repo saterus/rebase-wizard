@@ -1,4 +1,4 @@
-use crate::tutorial;
+use crate::subcommands::tutorial;
 use clap::arg_enum;
 
 arg_enum! {
