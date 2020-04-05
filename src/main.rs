@@ -3,6 +3,7 @@ extern crate regex;
 extern crate skim;
 
 mod cli;
+mod git;
 mod subcommands;
 
 pub fn main() {
