@@ -1,14 +1,14 @@
 class RebaseWizard < Formula
   desc "Let the Wizard guide you through the darkest of gituations"
   homepage "https://github.com/saterus/rebase-wizard"
-  url "https://github.com/saterus/rebase-wizard/archive/v0.0.1-alpha4.tar.gz"
-  sha256 "7c59dc446d3501a6197b327c1b6212dd26c9977f0a88c64389bcc6ef1f09f182"
+  url "https://github.com/saterus/rebase-wizard/archive/v0.99.2.tar.gz"
+  sha256 "aa6b4fd58b30c7b0e2e9a7211075b8245f735ba9193bebafc011035a730dbf5b"
   head "git@github.com:saterus/rebase-wizard.git"
 
   bottle do
-    root_url "https://github.com/saterus/rebase-wizard/releases/download/v0.0.1-alpha4"
+    root_url "https://github.com/saterus/rebase-wizard/releases/download/v0.99.2/"
     cellar :any_skip_relocation
-    sha256 "ec5a51c264087e468fac695e8477af0c3f816cd144e9f542a56060d9b181f583" => :mojave
+    sha256 "5fac691cdc0cb042ea83612ac859f294f1958931644db1d9ffcb1767e912452e" => :mojave
   end
 
   depends_on "rust" => [:build]
@@ -16,7 +16,7 @@ class RebaseWizard < Formula
   def install
     (buildpath/"src/github.com/saterus").mkpath
     ln_s buildpath, buildpath/"src/github.com/saterus/rebase-wizard"
-    system "cargo", "install", "-vv", "--locked", "--root", prefix, "--path", "."
+    system "cargo", "install", "--locked", "--root", prefix, "--path", "."
   end
 
   test do
