@@ -1,6 +1,6 @@
 [package]
 name = "rebase-wizard"
-version = "0.1.0"
+version = "0.99.2"
 authors = ["Alex Burkhart <saterus@gmail.com>"]
 edition = "2018"
 
