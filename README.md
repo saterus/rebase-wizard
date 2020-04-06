@@ -30,7 +30,7 @@ $ git fetch
 
 # Ask the wizard
 $ rebase-wizard help
-$ rebase-wizard tutorial
+$ rebase-wizard help jump
 $ rebase-wizard jump
 ```
 
@@ -41,7 +41,7 @@ $ rebase-wizard jump
 
 ##### OSX:
 
-Please bear us as we improve these cumbersome distribution problems. We're actively trying to improve it. This is pre-alpha software.
+Please bear us as we improve these cumbersome distribution problems. We're actively trying to improve it.
 
 ###### Homebrew Installation
 ```bash

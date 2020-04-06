@@ -1,8 +1,3 @@
-pub fn print_tutorial() {
-    println!("{}", SECRETS_TEXT);
-    println!("{}", TUTORIAL_TEXT);
-}
-
 pub static SECRETS_TEXT: &'static str = r"
 Wizard Secrets: 🧙‍♂️
 

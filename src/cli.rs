@@ -23,10 +23,8 @@ use structopt::StructOpt;
 #[derive(Debug, StructOpt)]
 pub enum Subcommand {
     /// Jump between base branches.
-    #[structopt(name = "jump")]
+    #[structopt(name = "jump", long_about = tutorial::TUTORIAL_TEXT)]
     Jump,
-    /// View the rebase-wizard tutorial about branch jumping.
-    Tutorial,
 }
 
 #[derive(StructOpt, Debug)]

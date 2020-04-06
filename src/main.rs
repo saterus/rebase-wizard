@@ -12,6 +12,5 @@ pub fn main() {
 
     match &config.subcommand {
         cli::Subcommand::Jump => subcommands::jump(&config),
-        cli::Subcommand::Tutorial => subcommands::tutorial(),
     }
 }
