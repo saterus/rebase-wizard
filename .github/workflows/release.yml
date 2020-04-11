@@ -1,0 +1,119 @@
+name: GitHub Release
+
+on:
+  # Publish `v1.2.3` tags as releases.
+  push:
+    tags:
+      - v*
+
+jobs:
+  # Create the GitHub Release before building the project.
+  create_release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Create artifacts directory
+      run: mkdir artifacts
+
+    - name: Create GitHub Release
+      id: release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        draft: "true"
+
+    - name: Save release upload URL to artifact
+      run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: artifacts
+        path: artifacts
+
+  # This runs for each target, so it can't be the same job that creates the Release.
+  build_release:
+    needs: [create_release]
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [linux, macos]
+        include:
+        - build: linux
+          os: ubuntu-latest
+          rust: stable
+          target: x86_64-unknown-linux-gnu
+          # target: x86_64-unknown-linux-musl
+        - build: macos
+          os: macos-latest
+          rust: stable
+          target: x86_64-apple-darwin
+
+    steps:
+    - name: Checkout rebase-wizard
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+
+    - name: Latest Stable Rust Toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        profile: minimal
+        override: "true"
+        target: ${{ matrix.target }}
+
+    - name: Export TARGET_DIR
+      run: |
+        TARGET_DIR="./target/${{ matrix.target }}"
+        echo "::set-env name=TARGET_DIR::$TARGET_DIR"
+
+    - name: Export OUTPUT_BINARY_PATH
+      run: |
+        OUTPUT_BINARY_PATH="${{ env.TARGET_DIR }}/release/rebase-wizard"
+        echo "::set-env name=OUTPUT_BINARY_PATH::$OUTPUT_BINARY_PATH"
+
+    - name: Release build
+      uses: actions-rs/cargo@v1
+      with:
+        # use-cross: "true"
+        command: build
+        args: --release --target ${{ matrix.target }}
+
+    - name: Strip Binary
+      run: strip ${{ env.OUTPUT_BINARY_PATH }}
+
+    - name: Get release download URL
+      uses: actions/download-artifact@v1
+      with:
+        name: artifacts
+        path: artifacts
+
+    - name: Set release upload URL
+      shell: bash
+      run: |
+        release_upload_url="$(cat artifacts/release-upload-url)"
+        echo "::set-env name=RELEASE_UPLOAD_URL::$release_upload_url"
+        echo "release upload url: $RELEASE_UPLOAD_URL"
+
+    - name: Set release asset
+      shell: bash
+      run: |
+        asset_name="rebase-wizard-${{ matrix.target }}"
+        mv ${{ env.OUTPUT_BINARY_PATH }} $asset_name
+        echo "::set-env name=RELEASE_ASSET::$asset_name"
+        echo "release asset: $RELEASE_ASSET"
+
+    - name: Upload release archive
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+        asset_path: ${{ env.RELEASE_ASSET }}
+        asset_name: ${{ env.RELEASE_ASSET }}
+        asset_content_type: application/octet-stream
