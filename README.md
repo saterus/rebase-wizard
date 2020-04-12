@@ -1,3 +1,5 @@
+![Rust Build](https://github.com/saterus/rebase-wizard/workflows/Rust%20Build/badge.svg)
+
 # Rebase Wizard
 
 The Wizard can help with all your rebase problems!
