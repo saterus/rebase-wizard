@@ -75,10 +75,18 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --release --target-dir=${{ matrix.target }}/release/rebase-wizard
+        args: --release --target-dir="./target/${{ matrix.target }}"
+
+    - name: Peek in Target dir
+      run: |
+        ls target/*
+        ls target/${{ matrix.target }}
+        ls target/${{ matrix.target }}/release
+      continue-on-error: true
 
     - name: Strip Binary
       run: strip "target/${{ matrix.target }}/release/rebase-wizard"
+      continue-on-error: true
 
     - name: Get release download URL
       uses: actions/download-artifact@v1
