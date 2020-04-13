@@ -1,38 +1,111 @@
 name: GitHub Release
 
-on: [push]
+on:
+  - push
+  # Publish `v1.2.3` tags as releases.
+  # push:
+  #   tags:
+  #     - v*
+
+env:
+  tag_version: very-initial-automated-release
 
 jobs:
-  investigation:
+  # Create the GitHub Release before building the project.
+  create_release:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
+    - name: Create artifacts directory
+      run: mkdir artifacts
 
-    - name: Dump job context
+    - name: Create GitHub Release
+      id: release
+      uses: actions/create-release@v1
       env:
-        JOB_CONTEXT: ${{ toJson(job) }}
-      run: echo "$JOB_CONTEXT"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.tag_version }}
+        release_name: ${{ env.tag_version }}
+        draft: "true"
+        prerelease: "true"
 
-    - name: Dump steps context
-      env:
-        STEPS_CONTEXT: ${{ toJson(steps) }}
-      run: echo "$STEPS_CONTEXT"
+    - name: Save release upload URL to artifact
+      run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
 
-    - name: Dump runner context
-      env:
-        RUNNER_CONTEXT: ${{ toJson(runner) }}
-      run: echo "$RUNNER_CONTEXT"
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: artifacts
+        path: artifacts
 
-    - name: Dump strategy context
-      env:
-        STRATEGY_CONTEXT: ${{ toJson(strategy) }}
-      run: echo "$STRATEGY_CONTEXT"
+  # This runs for each target, so it can't be the same job that creates the Release.
+  build_release:
+    needs: [create_release]
 
-    - name: Dump matrix context
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [linux, macos]
+        include:
+        - build: linux
+          os: ubuntu-latest
+          rust: stable
+          target: x86_64-unknown-linux-musl
+        - build: macos
+          os: macos-latest
+          rust: stable
+          target: x86_64-apple-darwin
+
+    steps:
+    - name: Checkout rebase-wizard
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+
+    - name: Latest Stable Rust Toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        profile: minimal
+        override: "true"
+        target: ${{ matrix.target }}
+
+    - name: Release build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release --target-dir=${{ matrix.target }}/release/rebase-wizard
+
+    - name: Strip Binary
+      run: strip "target/${{ matrix.target }}/release/rebase-wizard"
+
+    - name: Get release download URL
+      uses: actions/download-artifact@v1
+      with:
+        name: artifacts
+        path: artifacts
+
+    - name: Set release upload URL
+      shell: bash
+      run: |
+        release_upload_url="$(cat artifacts/release-upload-url)"
+        echo "::set-env name=RELEASE_UPLOAD_URL::$release_upload_url"
+        echo "release upload url: $RELEASE_UPLOAD_URL"
+
+    - name: Set release asset
+      shell: bash
+      run: |
+        asset_name="rebase-wizard-${{ env.tag_version }}-${{ matrix.target }}"
+        echo "::set-env name=RELEASE_ASSET::$asset_name"
+        echo "release asset: $RELEASE_ASSET"
+
+    - name: Upload release archive
+      uses: actions/upload-release-asset@v1.0.1
       env:
-        MATRIX_CONTEXT: ${{ toJson(matrix) }}
-      run: echo "$MATRIX_CONTEXT"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+        asset_path: ${{ env.RELEASE_ASSET }}
+        asset_name: ${{ env.RELEASE_ASSET }}
+        asset_content_type: application/octet-stream
