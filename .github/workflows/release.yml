@@ -71,21 +71,32 @@ jobs:
         override: "true"
         target: ${{ matrix.target }}
 
+    - name: Export TARGET_DIR
+      run: |
+        TARGET_DIR="./target/${{ matrix.target }}"
+        echo "::set-env name=TARGET_DIR::$TARGET_DIR"
+
+    - name: Export OUTPUT_BINARY_PATH
+      run: |
+        OUTPUT_BINARY_PATH="${{ env.TARGET_DIR }}/release/rebase-wizard"
+        echo "::set-env name=OUTPUT_BINARY_PATH::$OUTPUT_BINARY_PATH"
+
     - name: Release build
       uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --release --target-dir="./target/${{ matrix.target }}"
+        args: --release --target-dir="${{ env.TARGET_DIR }}"
 
     - name: Peek in Target dir
       run: |
-        ls ./target
-        ls ./target/${{ matrix.target }}
-        ls ./target/${{ matrix.target }}/release
+        ls
+        ls "${{ env.TARGET_DIR }}"
+        ls "${{ env.TARGET_DIR }}/release"
+        tree -L 2
       continue-on-error: true
 
     - name: Strip Binary
-      run: strip "./target/${{ matrix.target }}/release/rebase-wizard"
+      run: strip "${{ env.OUTPUT_BINARY_PATH }}"
       continue-on-error: true
 
     - name: Get release download URL
@@ -104,9 +115,8 @@ jobs:
     - name: Set release asset
       shell: bash
       run: |
-        binary_name="./target/${{ matrix.target }}/release/rebase-wizard"
         asset_name="rebase-wizard-${{ matrix.target }}"
-        mv $binary_name $asset_name
+        mv ${{ env.OUTPUT_BINARY_PATH }} $asset_name
         echo "::set-env name=RELEASE_ASSET::$asset_name"
         echo "release asset: $RELEASE_ASSET"
 
