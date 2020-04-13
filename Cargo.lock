@@ -505,7 +505,7 @@ dependencies = [
 
 [[package]]
 name = "rebase-wizard"
-version = "0.99.2"
+version = "1.0.0"
 dependencies = [
  "clap",
  "regex",
