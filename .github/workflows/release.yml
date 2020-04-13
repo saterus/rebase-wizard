@@ -85,14 +85,19 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --release --target-dir="${{ env.TARGET_DIR }}"
+        args: --release --verbose --target="${{ matrix.target }}" --target-dir="${{ env.TARGET_DIR }}"
+
+    - name: Tree Working Directory
+      run: |
+        pwd
+        tree -L 2
+      continue-on-error: true
 
     - name: Peek in Target dir
       run: |
         ls
         ls "${{ env.TARGET_DIR }}"
         ls "${{ env.TARGET_DIR }}/release"
-        tree -L 2
       continue-on-error: true
 
     - name: Strip Binary
