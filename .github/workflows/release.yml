@@ -84,8 +84,10 @@ jobs:
     - name: Release build
       uses: actions-rs/cargo@v1
       with:
+        use-cross: "true"
         command: build
         args: --release --verbose --target="${{ matrix.target }}" --target-dir="${{ env.TARGET_DIR }}"
+      continue-on-error: true
 
     - name: Tree Working Directory
       run: |
