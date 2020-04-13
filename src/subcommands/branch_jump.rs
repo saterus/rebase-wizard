@@ -10,7 +10,7 @@ pub fn jump(config: &cli::Config) {
     let branch_point = pick_branch_point(&current_branch_name, &target_branch, &config);
 
     println!("The Rebase Wizard has seen your future:");
-    println!("");
+    println!();
     println!("Run the following command when you are ready:");
     println!("  git rebase --onto {} {}", target_branch, branch_point);
 }
@@ -37,7 +37,9 @@ pub fn pick_target_branch(current_branch_name: &str, config: &cli::Config) -> St
     let branches = git::all_branches();
     let selection = sk::one(sk::to_source(branches), options);
 
-    git::extract_ref(&selection).to_string()
+    git::extract_ref(&selection)
+        .expect("branch name not found")
+        .to_string()
 }
 
 pub fn pick_branch_point(
@@ -69,5 +71,7 @@ pub fn pick_branch_point(
     let commits = git::recent_commits();
     let selection = sk::one(sk::to_source(commits), options);
 
-    git::extract_ref(&selection).to_string()
+    git::extract_ref(&selection)
+        .expect("commit sha not found")
+        .to_string()
 }

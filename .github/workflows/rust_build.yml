@@ -1,0 +1,91 @@
+name: Rust Build
+
+on:
+  pull_request:
+  push:
+    branches:
+    - master
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout rebase-wizard
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Latest Stable Rust Toolchain with clippy
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: clippy
+
+      - name: Annotate commit with clippy warnings
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
+
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout rebase-wizard
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Latest Stable Rust Toolchain with clippy
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      - name: Security audit
+        uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [linux, macos]
+        include:
+        - build: linux
+          os: ubuntu-latest
+          rust: stable
+          target: x86_64-unknown-linux-musl
+        - build: macos
+          os: macos-latest
+          rust: stable
+          target: x86_64-apple-darwin
+
+    steps:
+    - name: Checkout rebase-wizard
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+
+    - name: Latest Stable Rust Toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        profile: minimal
+        override: "true"
+        target: ${{ matrix.target }}
+
+    - name: Test build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --tests
+
+    - name: Test run
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --verbose

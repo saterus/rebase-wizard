@@ -23,7 +23,7 @@ impl<'b, 'a: 'b> From<SimpleOptions<'a>> for SkimOptions<'b> {
 pub fn one(source: SkimItemReceiver, options: SimpleOptions) -> String {
     let skim_output = Skim::run_with(&options.into(), Some(source))
         .map(|out| out.selected_items)
-        .unwrap_or_else(|| Vec::new());
+        .unwrap_or_else(Vec::new);
 
     let selected_item = skim_output.first().unwrap_or_else(|| {
         eprintln!("Nothing selected. Aborting.");

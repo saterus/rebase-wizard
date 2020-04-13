@@ -17,7 +17,7 @@ impl BranchLocation {
     }
 }
 
-static LOCAL_CHANGES_WARNING: &'static str = "\
+static LOCAL_CHANGES_WARNING: &str = "\
 The Wizard advises against rebasing while there are changes to the local git repo.
 
 Please commit, stash, or discard your changes before proceeding.";
@@ -88,14 +88,14 @@ pub fn current_branch_name() -> String {
         .to_string()
 }
 
-pub fn extract_ref(branch_line: &str) -> &str {
+pub fn extract_ref(branch_line: &str) -> Option<&str> {
     let re = Regex::new(r"\s*(\w\S*)\s").unwrap();
 
-    for caps in re.captures_iter(branch_line) {
-        return caps.get(1).unwrap().as_str();
+    if let Some(capture) = re.captures_iter(branch_line).next() {
+        Some(capture.get(1).unwrap().as_str())
+    } else {
+        None
     }
-
-    return "";
 }
 
 #[cfg(test)]
@@ -109,9 +109,9 @@ mod tests {
         let sample3 = "   origin/foo/bar-baz         770b0814b WIP!";
         let sample4 = "   fa1afe1         WIP!";
 
-        assert_eq!(extract_ref(sample), "foo/bar-baz");
-        assert_eq!(extract_ref(sample2), "foo/bark-bazz");
-        assert_eq!(extract_ref(sample3), "origin/foo/bar-baz");
-        assert_eq!(extract_ref(sample4), "fa1afe1");
+        assert_eq!(extract_ref(sample).unwrap(), "foo/bar-baz");
+        assert_eq!(extract_ref(sample2).unwrap(), "foo/bark-bazz");
+        assert_eq!(extract_ref(sample3).unwrap(), "origin/foo/bar-baz");
+        assert_eq!(extract_ref(sample4).unwrap(), "fa1afe1");
     }
 }
