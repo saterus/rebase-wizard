@@ -104,7 +104,9 @@ jobs:
     - name: Set release asset
       shell: bash
       run: |
-        asset_name="rebase-wizard-${{ env.tag_version }}-${{ matrix.target }}"
+        binary_name="./target/${{ matrix.target }}/release/rebase-wizard"
+        asset_name="rebase-wizard-${{ matrix.target }}"
+        mv binary_name asset_name
         echo "::set-env name=RELEASE_ASSET::$asset_name"
         echo "release asset: $RELEASE_ASSET"
 
