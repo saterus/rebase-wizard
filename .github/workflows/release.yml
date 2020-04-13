@@ -79,13 +79,13 @@ jobs:
 
     - name: Peek in Target dir
       run: |
-        ls target/*
-        ls target/${{ matrix.target }}
-        ls target/${{ matrix.target }}/release
+        ls ./target
+        ls ./target/${{ matrix.target }}
+        ls ./target/${{ matrix.target }}/release
       continue-on-error: true
 
     - name: Strip Binary
-      run: strip "target/${{ matrix.target }}/release/rebase-wizard"
+      run: strip "./target/${{ matrix.target }}/release/rebase-wizard"
       continue-on-error: true
 
     - name: Get release download URL
@@ -106,7 +106,7 @@ jobs:
       run: |
         binary_name="./target/${{ matrix.target }}/release/rebase-wizard"
         asset_name="rebase-wizard-${{ matrix.target }}"
-        mv binary_name asset_name
+        mv $binary_name $asset_name
         echo "::set-env name=RELEASE_ASSET::$asset_name"
         echo "release asset: $RELEASE_ASSET"
 
